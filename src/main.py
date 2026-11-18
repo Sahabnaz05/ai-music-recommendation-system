@@ -4,12 +4,14 @@ Command line runner for the Music Recommender Simulation.
 """
 
 from .recommender import load_songs, recommend_songs
-
+from .ai_recommender import AIMusicRecommender
 
 def main() -> None:
     songs = load_songs("data/songs.csv")
 
     print(f"Loaded songs: {len(songs)}")
+
+    recommender = AIMusicRecommender(songs)
 
     user_profiles = {
         "High-Energy Pop": {
@@ -48,6 +50,20 @@ def main() -> None:
             print(f"Because: {explanation}")
             print()
 
+
+    # AI-powered song recommendations
+    print("\n=== AI MUSIC RECOMMENDATIONS ===")
+
+    ai_model = AIMusicRecommender(songs)
+
+    recommendations = ai_model.recommend_similar(
+        "Sunrise City", k=5
+    )
+
+    for song in recommendations:
+        print(
+            f"{song['title']} by {song['artist']}"
+        )
 
 if __name__ == "__main__":
     main()

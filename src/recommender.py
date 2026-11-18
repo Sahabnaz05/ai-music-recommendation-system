@@ -50,6 +50,39 @@ def load_songs(csv_path: str) -> List[Dict]:
 
     return songs
 
+def validate_preferences(user_prefs: Dict) -> Dict:
+    """Validate user preferences before recommending songs."""
+
+    genre = user_prefs.get(
+        "genre", user_prefs.get("favorite_genre", "")
+    )
+    mood = user_prefs.get(
+        "mood", user_prefs.get("favorite_mood", "")
+    )
+    energy = user_prefs.get(
+        "energy", user_prefs.get("target_energy", 0.5)
+    )
+
+    if not isinstance(genre, str) or not genre.strip():
+        raise ValueError("Genre must be a non-empty string.")
+
+    if not isinstance(mood, str) or not mood.strip():
+        raise ValueError("Mood must be a non-empty string.")
+
+    try:
+        energy = float(energy)
+    except (TypeError, ValueError):
+        raise ValueError("Energy must be a number.") from None
+
+    if not 0.0 <= energy <= 1.0:
+        raise ValueError("Energy must be between 0.0 and 1.0.")
+
+    return {
+        "genre": genre.strip(),
+        "mood": mood.strip(),
+        "energy": energy
+    }
+
 
 def score_song(
     user_prefs: Dict,
@@ -92,6 +125,8 @@ def recommend_songs(
     k: int = 5
 ) -> List[Tuple[Dict, float, str]]:
     """Return the top k songs ranked by score."""
+    user_prefs = validate_preferences(user_prefs)
+
     results = []
 
     for song in songs:

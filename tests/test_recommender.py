@@ -59,3 +59,53 @@ def test_explain_recommendation_returns_non_empty_string():
     explanation = rec.explain_recommendation(user, song)
     assert isinstance(explanation, str)
     assert explanation.strip() != ""
+
+
+import pytest
+from src.recommender import validate_preferences
+
+
+def test_valid_preferences():
+    preferences = {
+        "genre": "pop",
+        "mood": "happy",
+        "energy": 0.85
+    }
+
+    result = validate_preferences(preferences)
+
+    assert result["genre"] == "pop"
+    assert result["energy"] == 0.85
+
+
+def test_invalid_energy():
+    preferences = {
+        "genre": "pop",
+        "mood": "happy",
+        "energy": 5.0
+    }
+
+    with pytest.raises(ValueError):
+        validate_preferences(preferences)
+
+
+def test_missing_genre():
+    preferences = {
+        "genre": "",
+        "mood": "happy",
+        "energy": 0.5
+    }
+
+    with pytest.raises(ValueError):
+        validate_preferences(preferences)
+
+
+def test_invalid_energy_type():
+    preferences = {
+        "genre": "pop",
+        "mood": "happy",
+        "energy": "very high"
+    }
+
+    with pytest.raises(ValueError):
+        validate_preferences(preferences)
