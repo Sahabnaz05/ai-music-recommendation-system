@@ -1,80 +1,98 @@
-# 🎧 Model Card: Music Recommender Simulation
+Model Card: VibeMatch 2.0
+1. Model name and overview
+VibeMatch 2.0 is a classroom music recommendation project that extends my Module 3 Music Recommender Simulation (VibeMatch 1.0). It has two recommendation methods:
+1. Preference-based scoring: a rule-based content-filtering system that ranks songs using genre, mood, and target energy.
+2. Song similarity: a scikit-learn NearestNeighbors model that finds songs with similar numerical musical features.
+The two methods run in the same Python application, but they produce separate recommendation lists. The nearest-neighbor results do not currently re-rank the preference-based recommendations.
+2. Intended use and users
+VibeMatch is intended for classroom learning, demonstration, and experimentation with explainable recommendations and basic machine-learning similarity. It is not a commercial streaming service, a predictor of long-term taste, or a system trained on real user listening behavior.
+3. How the system works
+Original preference-based recommender
+For each song, the program adds:
+- 2 points for an exact genre match (case-insensitive).
+- 1 point for an exact mood match (case-insensitive).
+- Up to 1 point for energy similarity: max(0, 1 - abs(song_energy - target_energy)).
+The maximum possible score is 4.00. The program ranks songs from highest to lowest and prints an explanation of each score.
+New machine-learning similarity component
+The new AIMusicRecommender uses four numeric song attributes: energy, danceability, valence, and acousticness. It standardizes those values with StandardScaler, then fits scikit-learn's NearestNeighbors using Euclidean distance. Given an existing song title, it retrieves nearby songs in that standardized feature space, excluding the query song itself.
 
-## 1. Model Name  
-VibeMatch 1.0 is a simple music recommendation system that suggests songs based on a user's favorite genre, mood, and energy level.
+A smaller distance indicates greater similarity under these four features. The distance is not a probability, a quality score, or evidence that a user will like the song. This model does not learn preferences from user feedback. Although the model is fitted to the dataset, it does not train a predictive neural network or learn individual tastes.
+4. Data
+The project uses data/songs.csv, a dataset of 20 fictional songs, expanded from 10 songs in the original project. Fields include song title, artist, genre, mood, energy, tempo, valence, danceability, and acousticness.
 
----
-
-## 2. Intended Use  
-
-My recommender is designed for classroom learning and demonstrating how content-based filtering works. Users provide their preferred genre, mood, and energy level, and the system recommends the five highest-scoring songs. It is not intended to replace a real streaming platform or accurately predict someone's long-term listening habits.
-
-
----
-
-## 3. How the Model Works  
-
-My recommender uses content-based filtering to compare song features with user preferences. A matching genre adds 2 points, a matching mood adds 1 point, and energy similarity adds up to 1 point using `1 - abs(song_energy - target_energy)`. The maximum score is 4 points. The system scores every song, sorts the results from highest to lowest, and returns the top five with explanations.
-
-
----
-
-## 4. Data  
-
-My dataset contains 20 fictional songs. I expanded the original dataset of 10 songs by adding 10 more songs with different genres and moods. Each song includes genre, mood, energy, tempo, valence, danceability, and acousticness. However, the current algorithm only uses genre, mood, and energy. The dataset does not represent every artist, genre, language, or musical style.
-
-
-
----
-
-## 5. Strengths  
-The recommender works well when a user's preferences closely match the available songs. For example, Sunrise City ranked first for High-Energy Pop with 3.97, Library Rain ranked first for Chill Lofi with 4.00, and Storm Runner ranked first for Deep Intense Rock with 3.96. Another strength is that the system explains how each song earned its score, making its decisions easier to understand.
-
-
----
-
-## 6. Limitations and Bias 
-
-The system has a small dataset of only 20 fictional songs, and some genres are represented more often than others. It also ignores lyrics, language, listening history, and user feedback. Since genre receives the highest weight, the algorithm may favor genre matches over songs with better energy similarity. For example, Blue Window ranked first for Conflicting Sad Energy even though its energy was much lower than requested. This could create a filter bubble where users repeatedly receive similar types of music. The system does not learn from user behavior.
-
-
----
-
-## 7. Evaluation  
-
-I tested four profiles: High-Energy Pop, Chill Lofi, Deep Intense Rock, and Conflicting Sad Energy. Their top recommendations were Sunrise City (3.97), Library Rain (4.00), Storm Runner (3.96), and Blue Window (3.37). The first three profiles tested different musical preferences, while the fourth tested conflicting preferences. I also ran `python -m pytest -q`, and both automated tests passed.
-
-### Profile Comparisons
-
-High-Energy Pop and Chill Lofi received different top songs because one preferred energetic pop while the other preferred calm lofi. High-Energy Pop and Deep Intense Rock both preferred high energy, but their genre and mood differences led to different first-place songs. High-Energy Pop and Conflicting Sad Energy both had high target energy, but the sad R&B profile ranked Blue Window first because genre and mood outweighed energy.
-
-Chill Lofi and Deep Intense Rock produced different recommendations because they had opposite energy preferences and different genres. Chill Lofi and Conflicting Sad Energy both favored more emotional or relaxed musical characteristics in some songs, but their different genre and energy targets changed the rankings. Deep Intense Rock and Conflicting Sad Energy both wanted high energy, yet Storm Runner ranked first for rock while Blue Window ranked first for sad R&B. This showed that genre and mood strongly influence the recommendations.
-
-### Scoring Experiment
-
-I changed the genre weight from 2 points to 1 point and increased energy similarity from a maximum of 1 point to 2 points. Mood remained worth 1 point.
-
-| Profile | Original Top Result | Experimental Top Result |
-|---|---|---|
-| High-Energy Pop | Sunrise City (3.97) | Sunrise City (3.94) |
-| Chill Lofi | Library Rain (4.00) | Library Rain (4.00) |
-| Deep Intense Rock | Storm Runner (3.96) | Storm Runner (3.92) |
-| Conflicting Sad Energy | Blue Window (3.37) | Blue Window (2.74) |
-
-The top recommendation remained the same for every profile, but some lower rankings changed. For High-Energy Pop, Weekend Bounce moved from third to second while Gym Hero dropped from second to fourth. For Conflicting Sad Energy, Desert Lights moved from fourth to third and Quiet Thoughts dropped out of the top five. The experiment showed how manually chosen weights can affect rankings. I restored the original scoring formula afterward.
+The preference-based scorer uses genre, mood, and energy. The nearest-neighbor model uses energy, danceability, valence, and acousticness. Neither method currently uses lyrics, language, listening history, likes, skips, or real listener feedback. The dataset is too small to represent music broadly.
+5. Strengths
+- The preference-based method explains exactly how its scores are calculated.
+- The nearest-neighbor method considers more numeric musical features than the original scoring system.
+- Input validation rejects missing genre or mood and invalid target-energy values.
+- The application logs startup and the number of songs loaded.
+- Automated tests check core recommendation behavior and selected invalid inputs.
+6. Limitations, bias, and risks
+- Small and synthetic dataset: 20 fictional songs cannot represent the range of genres, languages, cultures, or listeners.
+- Weighting bias: genre is worth twice as much as mood or maximum energy similarity in the rule-based scorer. This can rank a genre match above a song with better energy alignment.
+- Feature-selection bias: the similarity model uses four numeric attributes but ignores genre, lyrics, context, and personal meaning. Standardization makes feature variation in this small dataset influential.
+- No feedback loop: neither method learns from likes, skips, or listening history. Recommendations are not truly personalized beyond the entered preferences or selected example song.
+- Potential filter bubble: repeatedly emphasizing similar genres or acoustic features could limit musical variety.
+- No quality or fairness guarantee: passing software tests does not establish that recommendations are enjoyable, diverse, culturally representative, or fair.
+The system should not be presented as knowing users' tastes or as a substitute for a full-scale recommendation platform.
+7. Evaluation and observed results
+Original profile-based evaluation
+The original recommender was run on four profiles:
+Profile	Top recommendation	Score
+High-Energy Pop	Sunrise City	3.97
+Chill Lofi	Library Rain	4.00
+Deep Intense Rock	Storm Runner	3.96
+Conflicting Sad Energy	Blue Window	3.37
 
 
+The first three profiles produced different top songs. The conflicting sad/high-energy profile exposed a limitation: Blue Window ranked first despite a weaker energy match because genre and mood contributed more to its score.
+Original scoring-weight experiment
+In VibeMatch 2.0, I temporarily reduced the genre weight from 2 to 1 and increased the maximum energy-similarity contribution from 1 to 2, leaving mood at 1. I restored the original weights afterward.
+Profile	Original top result	Experimental top result
+High-Energy Pop	Sunrise City (3.97)	Sunrise City (3.94)
+Chill Lofi	Library Rain (4.00)	Library Rain (4.00)
+Deep Intense Rock	Storm Runner (3.96)	Storm Runner (3.92)
+Conflicting Sad Energy	Blue Window (3.37)	Blue Window (2.74)
 
----
 
-## 8. Future Work  
-I would expand the dataset to include more songs, genres, artists, and languages. I would also allow users to choose which preferences matter most and include additional features such as danceability, tempo, and acousticness. Another improvement would be collecting user feedback, such as likes and skips, to make recommendations more personalized and diverse.
+The top song stayed the same for each profile, but lower-ranked songs changed. For High-Energy Pop, Weekend Bounce moved from third to second and Gym Hero dropped from second to fourth. For Conflicting Sad Energy, Desert Lights moved from fourth to third and Quiet Thoughts left the top five. This showed that manually chosen weights influence rankings.
+New nearest-neighbor example
+Input: recommend_similar("Sunrise City", k=5)
+Result	Artist	Euclidean distance
+Rooftop Lights	Indigo Parade	0.588
+Weekend Bounce	City Motion	0.783
+Gym Hero	Max Pulse	0.833
+Desert Lights	Nova Sky	0.945
+Electric Heart	Crystal Pulse	1.041
 
 
----
+These are observed similarity results, not human preference ratings. No user study or relevance-accuracy benchmark has been performed.
+Automated reliability tests
+The latest reported command was:
+python -m pytest -v
+Observed result: 10 passed in 1.81s on the development Mac with Python 3.14.7.
+- 2 original recommender tests: ranking and nonempty explanations.
+- 4 preference-validation tests: valid preferences, out-of-range energy, missing genre, and nonnumeric energy.
+- 4 similarity-model tests: returns five results, excludes the input song, rejects an unknown song, and rejects negative k.
+The application also printed:
+INFO: Starting Music Recommendation System
+INFO: Successfully loaded 20 songs
+These tests establish behavior for the listed cases only. They do not measure recommendation accuracy, fairness, or robustness against every possible malformed input.
+8. Guardrails and reliability
+validate_preferences checks that genre and mood are nonempty strings and that energy is numeric and between 0.0 and 1.0. The nearest-neighbor method raises a ValueError for an unknown song title or a nonpositive k. The application logs startup and dataset loading. Tests exercise several of these guardrails.
 
-## 9. Personal Reflection  
+Possible future improvements include better handling of empty or corrupted CSV files, explicit validation of all numerical song features, additional edge-case tests, and a reusable evaluation harness.
+9. AI collaboration and verification
+I evaluated the project by running four user profiles, inspecting recommendation scores, and testing the final extension locally. I verified the updated application by running it and observing 10 passing tests.
 
+Verification decision: I added automated tests for invalid user preferences and missing song titles, then verified that those tests passed.
+
+Reflection to complete: Describe a real suggestion you accepted and one you revised or rejected, including why. This is required by the course rubric.
+
+The reported command outputs and recommendation results were checked in the local project.
+10. Future work
+I would expand the dataset with more songs, artists, genres, and languages; allow users to adjust feature weights; incorporate optional listening feedback; and evaluate recommendation diversity and relevance. I would also compare similarity-model results against the rule-based baseline with defined evaluation criteria rather than assuming one is better.
+11. Personal reflection
 This project helped me understand how recommendation systems use data and scoring rules to generate suggestions. My biggest learning moment was seeing how changing feature weights affected the rankings. I was also surprised that Blue Window ranked first for someone who preferred high-energy sad R&B, even though its energy was much lower than requested. This showed me that an algorithm can follow its rules correctly while still producing recommendations that may not fully match a user's expectations.
 
-I used claude to help like how we were taught in this course. I double-checked the suggestions by running the recommender for four profiles, reviewing the scores, and running the automated tests. In the future, I would expand the dataset, include user feedback, and experiment with additional features to improve the recommendations.
+Extending VibeMatch taught me that adding a machine-learning component is only part of building a reliable system. I also needed to validate inputs, test failure cases, examine actual outputs, and explain what the model can and cannot do. In the future, I would expand the dataset, include user feedback, and evaluate additional features to improve recommendations.
