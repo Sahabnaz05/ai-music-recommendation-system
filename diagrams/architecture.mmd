@@ -1,0 +1,14 @@
+
+flowchart TD
+    A[Start Application] --> B[Load Songs CSV]
+    B --> C[User Preferences]
+    C --> D[Validate Preferences]
+    D --> E[Rule-Based Recommender]
+    E --> F[Rank Songs and Explain Scores]
+    B --> G[Machine Learning Model]
+    G --> H[Scale Song Features]
+    H --> I[Nearest Neighbors]
+    I --> J[Recommend Similar Songs]
+    F --> K[Display Results]
+    J --> K
+    B --> L[Application Logging]

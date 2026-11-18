@@ -5,11 +5,22 @@ Command line runner for the Music Recommender Simulation.
 
 from .recommender import load_songs, recommend_songs
 from .ai_recommender import AIMusicRecommender
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s: %(message)s"
+)
+
 
 def main() -> None:
+    logging.info("Starting Music Recommendation System")
+
     songs = load_songs("data/songs.csv")
 
+    logging.info("Successfully loaded %d songs", len(songs))
+
     print(f"Loaded songs: {len(songs)}")
+
 
     recommender = AIMusicRecommender(songs)
 
