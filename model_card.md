@@ -87,7 +87,9 @@ I evaluated the project by running four user profiles, inspecting recommendation
 
 Verification decision: I added automated tests for invalid user preferences and missing song titles, then verified that those tests passed.
 
-Reflection to complete: Describe a real suggestion you accepted and one you revised or rejected, including why. This is required by the course rubric.
+I used AI assistance to explore improvements to my original recommender. One suggestion I accepted was adding input validation and automated tests for invalid preferences and unknown song titles. I implemented these checks and verified that the tests passed.
+
+One suggestion I revised was describing the machine-learning feature as personalized. I clarified that the nearest-neighbor model finds songs with similar audio features, but does not learn from individual listening histories. I reviewed the results and verified all 10 automated tests.
 
 The reported command outputs and recommendation results were checked in the local project.
 10. Future work
